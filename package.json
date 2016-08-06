@@ -1,0 +1,29 @@
+{
+  "name": "mole-fetch",
+  "version": "1.6.0",
+  "main": "./dist/mole-fetch.js",
+  "dependencies": {
+    "localforage": "^1.4.2"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.11.4",
+    "babel-preset-es2015": "^6.9.0",
+    "chai": "^3.5.0",
+    "chai-webdriver": "^1.2.0",
+    "chromedriver": "^2.22.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-minify": "0.0.13",
+    "mini-mock-api": "^0.3.0",
+    "mocha": "^3.0.0",
+    "selenium-assistant": "^0.2.0",
+    "selenium-webdriver": "^2.53.3",
+    "sw-testing-helpers": "^0.1.1"
+  },
+  "scripts": {
+    "build": "node_modules/.bin/gulp",
+    "test": "./node_modules/.bin/mocha --reporter spec ./test/automated-suite.js"
+  },
+  "author": "Warat Wongmaneekit <canopybanj@gmail.com> (http://thangis.me)",
+  "license": "Apache-2.0"
+}
