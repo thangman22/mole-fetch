@@ -1,6 +1,6 @@
 {
   "name": "mole-fetch",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "main": "./dist/mole-fetch.js",
   "dependencies": {
     "localforage": "^1.4.2"

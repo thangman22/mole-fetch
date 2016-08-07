@@ -6,10 +6,10 @@ Mole fetch is help web application make any HTTP request still running incase us
 ##Installation
 
 ```
-npm install --save sw-toolbox
+npm install --save mole-fetch
 ```
 ```
-git clone https://github.com/GoogleChrome/sw-toolbox.git
+git clone https://github.com/thangman22/mole-fetch.git
 ```
 
 ##Usage
@@ -80,9 +80,12 @@ This method will get result from Cache that created when browser offline and mat
 
 This method will get return status by taskName
 
+##Compatibility
+Google Chrome 49+
+
 ##Support
 
-If you’ve found an error in this library, please file an issue at: https://github.com/thangman22/mole_fetch/issues.
+If you’ve found an error in this library, please file an issue at: https://github.com/thangman22/mole-fetch/issues.
 
 Patches are encouraged, and may be submitted by forking this project and submitting a pull request through GitHub.
 
