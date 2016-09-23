@@ -23,10 +23,11 @@ class MoleFetch {
   sendRequest (taskName, url, data, method) {
     return navigator.serviceWorker.ready.then((registration) => {
       this.logDebug('ServiceWorker is Ready')
-      let requestData = {
-        url: url,
-        method: method,
-        body: data
+      let requestData
+      requestData = data
+      requestData.url = url
+      if(method){
+        requestData.method = method
       }
       this.logDebug('Save request to LocalForage [' + this.prefix + taskName + ']')
 
@@ -101,11 +102,21 @@ class MoleFetch {
   }
 
   makeFetchConfig (value) {
-    let fetchData = JSON.parse(value)
+    let fetchData = JSON.parse(value);
     if (fetchData) {
+
       let url = fetchData.url
-      fetchData.mode = 'cors'
-      fetchData.cache = 'default'
+
+      if(!fetchData.mode){
+        fetchData.mode = 'cors'
+      }
+
+      if(!fetchData.cache){
+        fetchData.cache = 'default'
+      }
+
+      delete(fetchData.url)
+
       return {
         url: url,
         config: fetchData
