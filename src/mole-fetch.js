@@ -7,6 +7,10 @@ class MoleFetch {
     this.debug = true
   }
 
+  regiterNotification () {
+    return Notification.requestPermission()
+  }
+
   // For Client
   onResponse (taskName) {
     return new Promise((resolve, reject) => {
@@ -20,16 +24,24 @@ class MoleFetch {
     })
   }
 
-  sendRequest (taskName, url, data, method) {
+  sendRequest (taskName, url, data, method, notificationDetail) {
     return navigator.serviceWorker.ready.then((registration) => {
       this.logDebug('ServiceWorker is Ready')
       let requestData
       requestData = data
       requestData.url = url
-      if(method){
+      if (method) {
         requestData.method = method
       }
       this.logDebug('Save request to LocalForage [' + this.prefix + taskName + ']')
+
+      if (notificationDetail && Notification.permission === 'granted') {
+        if (notificationDetail.title && notificationDetail.body) {
+          localforage.setItem(this.prefix + taskName + '-notification', JSON.stringify(notificationDetail))
+        } else {
+          throw 'Notification should be contain title,body properties'
+        }
+      }
 
       localforage.setItem(this.prefix + taskName, JSON.stringify(requestData)).then(() => {
         this.logDebug('Register sync [' + this.prefix + taskName + ']')
@@ -48,7 +60,6 @@ class MoleFetch {
 
   getCacheResponse (taskName, expireTime) {
     return new Promise((resolve, reject) => {
-
       if (!localforage) {
         reject('localForage is required.')
       }
@@ -77,7 +88,6 @@ class MoleFetch {
     if (event.tag.indexOf(this.prefix) !== -1) {
       this.logDebug('Found bgfetch request [' + event.tag + ']')
       localforage.getItem(event.tag).then((value) => {
-
         let fetchData = this.makeFetchConfig(value)
         this.logDebug('Begin fetch request [' + event.tag + ']')
 
@@ -97,25 +107,34 @@ class MoleFetch {
       let reponseWithoutBr = response.replace(/(\r\n|\n|\r)/gm, '')
       this.logDebug('Publish data to client [' + tag + ']')
 
+      localforage.getItem(tag + '-notification').then((value) => {
+        let notificationData = JSON.parse(value)
+
+        self.registration.showNotification(notificationData.title, {
+          body: notificationData.body,
+          icon: notificationData.icon,
+          tag: tag + '-notification'
+        })
+      })
+
       this.publishResult(taskName, reponseWithoutBr)
     })
   }
 
   makeFetchConfig (value) {
-    let fetchData = JSON.parse(value);
+    let fetchData = JSON.parse(value)
     if (fetchData) {
-
       let url = fetchData.url
 
-      if(!fetchData.mode){
+      if (!fetchData.mode) {
         fetchData.mode = 'cors'
       }
 
-      if(!fetchData.cache){
+      if (!fetchData.cache) {
         fetchData.cache = 'default'
       }
 
-      delete(fetchData.url)
+      delete (fetchData.url)
 
       return {
         url: url,
@@ -129,7 +148,7 @@ class MoleFetch {
     self.clients.matchAll({
       includeUncontrolled: true
     }).then((clientList) => {
-      if (clientList.length == 0 || forceOffline === true) {
+      if (clientList.length === 0 || forceOffline === true) {
         this.updateTaskStatus(taskName, 'cached')
         this.saveResultWhenOffline(taskName, result)
       } else {
