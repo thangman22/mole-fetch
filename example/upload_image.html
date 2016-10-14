@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Example Mole Fetch</title>
+    <script type="text/javascript" src="node_modules/localforage/dist/localforage.min.js"></script>
+    <script type="text/javascript" src="../src/mole-fetch.js"></script>
+</head>
+<input type="file" id="fileuploadform" onchange="previewFile()" />
+<body>
+    <script type="text/javascript">
+        const moleFetch = new MoleFetch()
+
+        moleFetch.regiterNotification();
+
+        function previewFile() {
+          let file    = document.querySelector('#fileuploadform').files[0];
+          let reader  = new FileReader();
+
+          let notificationData = {
+            title:'Completed',
+            body:'Your Image upload completed'
+          }
+
+          reader.addEventListener("load", () =>  {
+            moleFetch.sendRequest('upload-image', 'http://localhost:5555/example/uploadServer.php',
+            {
+                body : JSON.stringify({
+                    "image":reader.result
+                }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }
+            , 'POST',notificationData)
+        }, false);
+
+          if (file) {
+            reader.readAsDataURL(file);
+        }
+    }
+
+    //Register ServiceWoker
+    if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.register("sw.js");
+    }
+
+    //Implement onResponse for recieve response from ServiceWorker when site is online
+    moleFetch.onResponse('upload-image').then((value) => {
+
+    })
+
+    //Implement onResponse for recieve response from Cache when site is offline
+    moleFetch.getCacheResponse('upload-image',false).then((value) => {
+
+    })
+
+</script>
+</body>
+
+</html>
