@@ -43,7 +43,7 @@ moleFetch.getCacheResponse('facebook',false).then((value) => {
 })
 ```
 
-###ServiceWorker file
+### ServiceWorker file
 ```javascript
 importScripts('node_modules/localforage/dist/localforage.min.js')
 importScripts('node_modules/mole-fetch/dist/mole-fetch.js')
@@ -62,35 +62,35 @@ self.addEventListener('sync', (event) => {
 })
 
 ```
-##Method
+## Method
 
-####sendRequest (taskName, url, data, method)
+#### sendRequest (taskName, url, data, method)
 
 This method will be send request to ServiceWorker and request via FetchAPI
 
-####moleFetch.onResponse(taskName)
+#### moleFetch.onResponse(taskName)
 
 This method will wating result from FetchAPI matched by name return as Promise
 
-####moleFetch.getCacheResponse(taskName)
+#### moleFetch.getCacheResponse(taskName)
 
 This method will get result from Cache that created when browser offline and matched by name as Promise
 
-####moleFetch.getTaskStatus(taskName)
+#### moleFetch.getTaskStatus(taskName)
 
 This method will get return status by taskName
 
-##Compatibility
+## Compatibility
 Google Chrome 49+
 
-##Support
+## Support
 
 If you’ve found an error in this library, please file an issue at: https://github.com/thangman22/mole-fetch/issues.
 
 Patches are encouraged, and may be submitted by forking this project and submitting a pull request through GitHub.
 
 
-##License
+## License
 
 Copyright 2016 Warat Wongmaneekit.
 
