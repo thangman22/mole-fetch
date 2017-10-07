@@ -1,13 +1,33 @@
 
-<img src="logo.png" alt="logo"/>
+<img src="banner.svg" alt="logo" align="center"/>
 
-[![npm version](https://badge.fury.io/js/mole-fetch.svg)](https://badge.fury.io/js/mole-fetch)
-[![download](http://img.shields.io/npm/dm/mole-fetch.svg)](https://www.npmjs.com/package/mole-fetch)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
+<div align="center"><h2>Mole Fetch, Keep your task running in background.</h2>
+<p>A lightweight library, assists in making background HTTP requests by using Service Workers and Fetch API.<p></div>
 
-# Mole Fetch
+<br />
+<div align="center">
+  <!-- NPM Version -->
+  <a href="https://badge.fury.io/js/mole-fetch">
+    <img src="https://badge.fury.io/js/mole-fetch.svg" alt="npm version" />
+  </a>
+  <!-- Download -->
+  <a href="https://www.npmjs.com/package/mole-fetch">
+    <img src="http://img.shields.io/npm/dm/mole-fetch.svg" alt="Downloads" />
+  </a>
+  <!-- Quality -->
+  <a href="http://packagequality.com/#?package=mole-fetch">
+    <img src="http://npm.packagequality.com/shield/mole-fetch.svg" alt="Package Quality" />
+  </a>
+    <!-- License -->
+  <a href="https://opensource.org/licenses/Apache-2.0">
+    <img src="https://img.shields.io/badge/License-Apache%202.0-green.svg" alt="Package Quality" />
+  </a>
+</div>
 
-Mole Fetch assists in making background HTTP requests by using Service Workers and Fetch API.
+<br />
+
+
+# About
 
 Mole Fetch allows HTTP requests to run in the background, even if the users have accidentally closed a browser, or the network has disconnected. This library uses Service Workers and Synchronization Managers.
 
@@ -91,19 +111,19 @@ This method will get return status by taskName
 
 ## Browser Supported
 
-| [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/edge/edge.png" alt="IE / Edge" width="64px" height="64px" />](http://godban.github.io/browsers-support-badges/)</br>Edge | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/firefox/firefox.png" alt="Firefox" width="64px" height="64px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/chrome/chrome.png" alt="Chrome" width="64px" height="64px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/safari/safari.png" alt="Safari" width="64px" height="64px" />](http://godban.github.io/browsers-support-badges/)</br>Safari | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/opera/opera.png" alt="Opera" width="64px" height="64px" />](http://godban.github.io/browsers-support-badges/)</br>Opera | 
-| --------- | --------- | --------- | --------- | ---------
-| 15+ (Flag) | 55+ | 49+ | *10.1+ | 47+
+| [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/edge/edge.png" alt="IE / Edge" width="64px" height="64px" />](http://caniuse.com/#feat=fetch)</br>Edge | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/firefox/firefox.png" alt="Firefox" width="64px" height="64px" />](http://caniuse.com/#feat=fetch)</br>Firefox | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/chrome/chrome.png" alt="Chrome" width="64px" height="64px" />](http://caniuse.com/#feat=fetch)</br>Chrome | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/safari/safari.png" alt="Safari" width="64px" height="64px" />](http://caniuse.com/#feat=fetch)</br>Safari | [<img src="https://cdn.rawgit.com/alrra/browser-logos/f50d4cc8/src/opera/opera.png" alt="Opera" width="64px" height="64px" />](http://caniuse.com/#feat=fetch)</br>Opera | 
+| ---------: | ---------: | ---------: | ---------: | ---------:
+| 15+ (Flag) | 55+ | 49+ | 10.1+* | 47+
 
 Note: Safari browser is not supported Service Workers. 
 
 ## Contribution
 
-If you’ve found an error in this library, please file an issue at: https://github.com/thangman22/mole-fetch/issues.
+If you’ve found an error in this library, please file an issue at: https://github.com/thangman22/mole-fetch/issues
 
 Patches are encouraged, and may be submitted by forking this project and submitting a pull request through GitHub.
 
-## License
+### License
 
 Copyright 2016-2017 Warat Wongmaneekit.
 
