@@ -99,6 +99,17 @@ class MoleFetch {
   }
 
   makeFetch (fetchData, tag, taskName) {
+
+    localforage.getItem(tag + '-notification').then((value) => {
+      let notificationData = JSON.parse(value)
+
+      self.registration.showNotification(notificationData.start.title, {
+        body: notificationData.start.body,
+        icon: notificationData.start.icon,
+        tag: tag + '-notification'
+      })
+    })
+
     return fetch(fetchData.url, fetchData.config).then((response) => {
       return response.text()
     }).then((response) => {
@@ -110,9 +121,9 @@ class MoleFetch {
       localforage.getItem(tag + '-notification').then((value) => {
         let notificationData = JSON.parse(value)
 
-        self.registration.showNotification(notificationData.title, {
-          body: notificationData.body,
-          icon: notificationData.icon,
+        self.registration.showNotification(notificationData.finished.title, {
+          body: notificationData.finished.body,
+          icon: notificationData.finished.icon,
           tag: tag + '-notification'
         })
       })
