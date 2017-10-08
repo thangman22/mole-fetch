@@ -105,7 +105,6 @@ class MoleFetch {
 
       self.registration.showNotification(notificationData.start.title, {
         body: notificationData.start.body,
-        icon: notificationData.start.icon,
         tag: tag + '-notification'
       })
     })
@@ -123,7 +122,6 @@ class MoleFetch {
 
         self.registration.showNotification(notificationData.finished.title, {
           body: notificationData.finished.body,
-          icon: notificationData.finished.icon,
           tag: tag + '-notification'
         })
       })
