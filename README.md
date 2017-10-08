@@ -49,7 +49,14 @@ const moleFetch = new MoleFetch()
 
 function fetchFacebook() {
     //Call sendRequest for request HTTP
-    moleFetch.sendRequest('facebook', 'http://localhost:5555/mock-api/online', false, 'GET')
+    moleFetch.sendRequest('facebook', 'http://localhost:5555/mock-api/online', false, 'GET',{
+      start: {
+        title: 'Loading....'
+      },
+      finished: {
+        title: 'Loading is finished'
+      }
+    })
 }
 
 // Register Service Wokers
