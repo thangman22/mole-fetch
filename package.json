@@ -7,19 +7,19 @@
     "localforage": "^1.5.0"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-preset-es2015": "^6.24.1",
-    "chai": "^4.1.2",
-    "chai-webdriver": "^1.2.0",
-    "chromedriver": "^2.33.0",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
+    "babel-cli": "6.26.0",
+    "babel-preset-es2015": "6.24.1",
+    "chai": "4.3.6",
+    "chai-webdriver": "1.2.3",
+    "chromedriver": "2.46.0",
+    "gulp": "3.9.1",
+    "gulp-babel": "7.0.1",
     "gulp-minify": "1.0.0",
-    "mini-mock-api": "^0.3.0",
-    "mocha": "^4.0.1",
-    "selenium-assistant": "^5.1.1",
-    "selenium-webdriver": "^3.6.0",
-    "sw-testing-helpers": "^1.0.2"
+    "mini-mock-api": "0.3.0",
+    "mocha": "4.1.0",
+    "selenium-assistant": "5.4.0",
+    "selenium-webdriver": "3.6.0",
+    "sw-testing-helpers": "1.0.2"
   },
   "scripts": {
     "build": "node_modules/.bin/gulp",
