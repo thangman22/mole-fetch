@@ -10,10 +10,9 @@ export class MoleFetch {
   onResponse (taskName) {
     return new Promise((resolve, reject) => {
       navigator.serviceWorker.addEventListener('message', (event) => {
-        const messageData = JSON.parse(event.data)
-
+        const messageData = event.data
         if (messageData.taskName === taskName) {
-          resolve(messageData.result)
+          resolve({ status: 'live', result: messageData.result })
         }
       })
     })
@@ -29,13 +28,13 @@ export class MoleFetch {
     this.logDebug('Save request to LocalForage [' + this.prefix + taskName + ']')
     if (notificationDetail && Notification.permission === 'granted') {
       if (notificationDetail.start && notificationDetail.finished) {
-        localforage.setItem(this.prefix + taskName + '-notification', JSON.stringify(notificationDetail))
+        localforage.setItem(this.prefix + taskName + '-notification', notificationDetail)
       } else {
         throw new Error('Notification should be contain title,body properties')
       }
     }
 
-    await localforage.setItem(this.prefix + taskName, JSON.stringify(requestOptions))
+    await localforage.setItem(this.prefix + taskName, requestOptions)
     this.logDebug('Register sync [' + this.prefix + taskName + ']')
     this.registerSync(taskName)
   }
@@ -54,11 +53,15 @@ export class MoleFetch {
     const keyName = this.prefix + taskName + '-result'
     const value = await localforage.getItem(keyName)
     if (value) {
-      localforage.removeItem(keyName)
       this.updateTaskStatus(taskName, 'completed')
       if (value.time <= expireTime || !expireTime) {
         this.logDebug('Found cache for [' + taskName + ']')
-        return value.result
+        await localforage.setItem(this.prefix + taskName + '-result', {
+          fresh: false,
+          result: value.result,
+          time: value.time
+        })
+        return { status: 'offline', fresh: value.fresh, time: value.time, result: value.result }
       } else {
         this.logDebug('Found cache but Expired [' + taskName + ']')
         return false
@@ -83,25 +86,22 @@ export class MoleFetch {
   }
 
   async makeFetch (fetchData, tag, taskName) {
-    const value = await localforage.getItem(tag + '-notification')
-    const notificationData = JSON.parse(value)
+    const notificationData = await localforage.getItem(tag + '-notification')
     notificationData.start.tag = tag + '-notification'
-    self.registration.showNotification(notificationData.start.title, notificationData.start)
+    self.registration.showNotification(notificationData.start.title, notificationData.start.options)
     const request = new Request(fetchData.url, fetchData.config)
     const fetchObject = await fetch(request)
-    const response = await fetchObject.text()
+    const response = await fetchObject.json()
     this.logDebug('Fetch is Completed [' + tag + ']')
     localforage.removeItem(tag)
-    const reponseWithoutBr = response.replace(/(\r\n|\n|\r)/gm, '')
     this.logDebug('Publish data to client [' + tag + ']')
     notificationData.finished.tag = tag + '-notification'
-    self.registration.showNotification(notificationData.finished.title, notificationData.finished)
+    self.registration.showNotification(notificationData.finished.title, notificationData.finished.options)
 
-    this.publishResult(taskName, reponseWithoutBr)
+    this.publishResult(taskName, response)
   }
 
-  makeFetchConfig (value) {
-    const fetchData = JSON.parse(value)
+  makeFetchConfig (fetchData) {
     if (fetchData) {
       const url = fetchData.url
 
@@ -114,18 +114,16 @@ export class MoleFetch {
     }
   }
 
-  async publishResult (taskName, result, forceOffline) {
+  async publishResult (taskName, result) {
     this.logDebug('List client [' + this.prefix + taskName + ']')
     const clientList = await self.clients.matchAll({
       includeUncontrolled: true
     })
-    if (clientList.length === 0 || forceOffline === true) {
-      this.updateTaskStatus(taskName, 'cached')
-      this.saveResultWhenOffline(taskName, result)
-    } else {
-      this.updateTaskStatus(taskName, 'completed')
+    this.saveResultWhenOffline(taskName, result)
+    this.updateTaskStatus(taskName, 'completed')
+    if (clientList.length > 0) {
       for (const client of clientList) {
-        this.postResult(taskName, result, client)
+        this.postResultToClient(taskName, result, client)
       }
     }
   }
@@ -133,21 +131,22 @@ export class MoleFetch {
   async saveResultWhenOffline (taskName, result) {
     this.logDebug('client is offline save to LocalForage [' + this.prefix + taskName + ']')
     await localforage.setItem(this.prefix + taskName + '-result', {
+      fresh: true,
       result,
-      time: new Date().getTime() / 1000
+      time: Math.round(new Date().getTime() / 1000)
     })
     return {
       status: 'success'
     }
   }
 
-  postResult (taskName, result, client) {
+  postResultToClient (taskName, result, client) {
     this.logDebug('Push to client ' + client.id + ' [' + this.prefix + taskName + ']')
     const responseMessage = {
       result,
       taskName
     }
-    client.postMessage(JSON.stringify(responseMessage))
+    client.postMessage(responseMessage)
   }
 
   async updateTaskStatus (taskName, status) {

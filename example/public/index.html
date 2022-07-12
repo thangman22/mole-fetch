@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Example Mole Fetch</title>
 </head>
-<button id="test-fetch">Fetch Facebook</button>
+<button id="test-fetch">Test fetch</button>
 <div id="result"></div>
 
 <body>
@@ -38,12 +38,12 @@
 
     //Implement onResponse for recieve response from ServiceWorker when site is online
     moleFetch.onResponse('test-fetch').then((value) => {
-        document.getElementById("result").innerHTML = value;
+        document.getElementById("result").innerHTML = JSON.stringify(value);
     })
 
     //Implement onResponse for recieve response from Cache when site is offline
     moleFetch.getCacheResponse('test-fetch',false).then((value) => {
-        document.getElementById("result").innerHTML = value;
+        document.getElementById("result").innerHTML = JSON.stringify(value);
     })
 
     document.getElementById('test-fetch').addEventListener('click', testFetch)
