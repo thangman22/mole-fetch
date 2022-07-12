@@ -1,5 +1,4 @@
-importScripts('node_modules/localforage/dist/localforage.min.js')
-importScripts('../src/mole-fetch.js')
+import { MoleFetch } from './mole-fetch.min.js'
 
 self.addEventListener('install', (event) => {
   self.skipWaiting()
@@ -10,7 +9,6 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('sync', (event) => {
-  let moleFetch = new MoleFetch
+  const moleFetch = new MoleFetch()
   moleFetch.initBackgroudfetch(event)
-
 })

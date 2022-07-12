@@ -4,24 +4,32 @@
 <head>
     <meta charset="UTF-8">
     <title>Example Mole Fetch</title>
-    <script type="text/javascript" src="node_modules/localforage/dist/localforage.min.js"></script>
-    <script type="text/javascript" src="../src/mole-fetch.js"></script>
 </head>
-<button onclick="fetchFacebook()">Fetch Facebook</button>
+<button id="test-fetch">Fetch Facebook</button>
 <div id="result"></div>
 
 <body>
-    <script type="text/javascript">
+    <script type="module">
+    import {MoleFetch} from '/mole-fetch.min.js';
     const moleFetch = new MoleFetch()
 
-    function fetchFacebook() {
+    const testFetch = async () => {
         //Call sendRequest for request HTTP
-        moleFetch.sendRequest('facebook', 'http://localhost:5555/mock-api/online', false, 'GET')
+        moleFetch.sendRequest('test-fetch', '/online', {}, {
+            start: {
+                title: 'Test Fetch',
+                body: 'Test Fetch is processing...',
+            },
+            finished: {
+                title: 'Test Fetch',
+                body: 'Test Fetch is finished.',
+            },
+        })
     }
 
     //Register ServiceWoker
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.register("sw.js").then((registration) => {
+        navigator.serviceWorker.register("sw.js",{type: 'module'}).then((registration) => {
             console.log('ServiceWorker registration successful with scope: ', registration.scope)
         }).catch(function(err) {
             console.error('ServiceWorker registration failed: ', err)
@@ -29,14 +37,16 @@
     }
 
     //Implement onResponse for recieve response from ServiceWorker when site is online
-    moleFetch.onResponse('facebook').then((value) => {
+    moleFetch.onResponse('test-fetch').then((value) => {
         document.getElementById("result").innerHTML = value;
     })
 
     //Implement onResponse for recieve response from Cache when site is offline
-    moleFetch.getCacheResponse('facebook',false).then((value) => {
+    moleFetch.getCacheResponse('test-fetch',false).then((value) => {
         document.getElementById("result").innerHTML = value;
     })
+
+    document.getElementById('test-fetch').addEventListener('click', testFetch)
 
     </script>
 </body>

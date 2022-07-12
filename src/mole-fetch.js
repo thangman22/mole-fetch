@@ -1,10 +1,9 @@
-'use strict'
+import localforage from 'localforage/src/localforage.js'
 
-class MoleFetch {
-
+export class MoleFetch {
   constructor () {
     this.prefix = 'bgfetch-'
-    this.debug = true
+    this.debug = false
   }
 
   regiterNotification () {
@@ -15,7 +14,7 @@ class MoleFetch {
   onResponse (taskName) {
     return new Promise((resolve, reject) => {
       navigator.serviceWorker.addEventListener('message', (event) => {
-        let messageData = JSON.parse(event.data)
+        const messageData = JSON.parse(event.data)
 
         if (messageData.taskName === taskName) {
           resolve(messageData.result)
@@ -24,196 +23,158 @@ class MoleFetch {
     })
   }
 
-  sendRequest (taskName, url, data, method, notificationDetail) {
-    return navigator.serviceWorker.ready.then((registration) => {
-      this.logDebug('ServiceWorker is Ready')
-      let requestData
-      requestData = data
-      requestData.url = url
-      if (method) {
-        requestData.method = method
-      }
-      this.logDebug('Save request to LocalForage [' + this.prefix + taskName + ']')
+  async sendRequest (taskName, url, options, notificationDetail) {
+    await Notification.requestPermission()
+    await navigator.serviceWorker.ready
+    this.logDebug('ServiceWorker is Ready')
+    const requestOptions = options
+    requestOptions.url = url
 
-      if (notificationDetail && Notification.permission === 'granted') {
-        if (notificationDetail.title && notificationDetail.body) {
-          localforage.setItem(this.prefix + taskName + '-notification', JSON.stringify(notificationDetail))
-        } else {
-          throw 'Notification should be contain title,body properties'
-        }
+    this.logDebug('Save request to LocalForage [' + this.prefix + taskName + ']')
+    if (notificationDetail && Notification.permission === 'granted') {
+      if (notificationDetail.start && notificationDetail.finished) {
+        localforage.setItem(this.prefix + taskName + '-notification', JSON.stringify(notificationDetail))
+      } else {
+        throw new Error('Notification should be contain title,body properties')
       }
+    }
 
-      localforage.setItem(this.prefix + taskName, JSON.stringify(requestData)).then(() => {
-        this.logDebug('Register sync [' + this.prefix + taskName + ']')
-        this.registerSync(taskName)
-      })
-    })
+    await localforage.setItem(this.prefix + taskName, JSON.stringify(requestOptions))
+    this.logDebug('Register sync [' + this.prefix + taskName + ']')
+    this.registerSync(taskName)
   }
 
-  registerSync (taskName) {
-    return navigator.serviceWorker.ready.then((registration) => {
-      registration.sync.register(this.prefix + taskName).then(() => {
-        this.updateTaskStatus(taskName, 'requested')
-      })
-    })
+  async registerSync (taskName) {
+    const registration = await navigator.serviceWorker.ready
+    await registration.sync.register(this.prefix + taskName)
+    this.updateTaskStatus(taskName, 'requested')
   }
 
-  getCacheResponse (taskName, expireTime) {
-    return new Promise((resolve, reject) => {
-      if (!localforage) {
-        reject('localForage is required.')
+  async getCacheResponse (taskName, expireTime) {
+    if (!localforage) {
+      return new Error('localForage is required.')
+    }
+
+    const keyName = this.prefix + taskName + '-result'
+    const value = await localforage.getItem(keyName)
+    if (value) {
+      localforage.removeItem(keyName)
+      this.updateTaskStatus(taskName, 'completed')
+      if (value.time <= expireTime || !expireTime) {
+        this.logDebug('Found cache for [' + taskName + ']')
+        return value.result
+      } else {
+        this.logDebug('Found cache but Expired [' + taskName + ']')
+        return false
       }
-
-      let keyName = this.prefix + taskName + '-result'
-      localforage.getItem(keyName).then((value) => {
-        if (value) {
-          localforage.removeItem(keyName)
-          this.updateTaskStatus(taskName, 'completed')
-          if (value.time <= expireTime || !expireTime) {
-            this.logDebug('Found cache for [' + taskName + ']')
-            resolve(value.result)
-          } else {
-            this.logDebug('Found cache but Expired [' + taskName + ']')
-            resolve(false)
-          }
-        } else {
-          this.logDebug('Not found cache [' + taskName + ']')
-          resolve(false)
-        }
-      })
-    })
-  }
-
-  initBackgroudfetch (event) {
-    if (event.tag.indexOf(this.prefix) !== -1) {
-      this.logDebug('Found bgfetch request [' + event.tag + ']')
-      localforage.getItem(event.tag).then((value) => {
-        let fetchData = this.makeFetchConfig(value)
-        this.logDebug('Begin fetch request [' + event.tag + ']')
-
-        let taskName = event.tag.replace(this.prefix, '')
-        this.updateTaskStatus(taskName, 'fetching')
-        this.makeFetch(fetchData, event.tag, taskName)
-      })
+    } else {
+      this.logDebug('Not found cache [' + taskName + ']')
+      return false
     }
   }
 
-  makeFetch (fetchData, tag, taskName) {
+  async initBackgroudfetch (event) {
+    if (event.tag.indexOf(this.prefix) !== -1) {
+      this.logDebug('Found bgfetch request [' + event.tag + ']')
+      const value = await localforage.getItem(event.tag)
+      const fetchData = this.makeFetchConfig(value)
+      this.logDebug('Begin fetch request [' + event.tag + ']')
 
-    localforage.getItem(tag + '-notification').then((value) => {
-      let notificationData = JSON.parse(value)
+      const taskName = event.tag.replace(this.prefix, '')
+      this.updateTaskStatus(taskName, 'fetching')
+      this.makeFetch(fetchData, event.tag, taskName)
+    }
+  }
 
-      self.registration.showNotification(notificationData.start.title, {
-        body: notificationData.start.body,
-        tag: tag + '-notification'
-      })
+  async makeFetch (fetchData, tag, taskName) {
+    const value = await localforage.getItem(tag + '-notification')
+    const notificationData = JSON.parse(value)
+    self.registration.showNotification(notificationData.start.title, {
+      body: notificationData.start.body,
+      tag: tag + '-notification'
+    })
+    const request = new Request(fetchData.url, fetchData.config)
+    const fetchObject = await fetch(request)
+    const response = await fetchObject.text()
+    this.logDebug('Fetch is Completed [' + tag + ']')
+    localforage.removeItem(tag)
+    const reponseWithoutBr = response.replace(/(\r\n|\n|\r)/gm, '')
+    this.logDebug('Publish data to client [' + tag + ']')
+
+    self.registration.showNotification(notificationData.finished.title, {
+      body: notificationData.finished.body,
+      tag: tag + '-notification'
     })
 
-    return fetch(fetchData.url, fetchData.config).then((response) => {
-      return response.text()
-    }).then((response) => {
-      this.logDebug('Fetch is Completed [' + tag + ']')
-      localforage.removeItem(tag)
-      let reponseWithoutBr = response.replace(/(\r\n|\n|\r)/gm, '')
-      this.logDebug('Publish data to client [' + tag + ']')
-
-      localforage.getItem(tag + '-notification').then((value) => {
-        let notificationData = JSON.parse(value)
-
-        self.registration.showNotification(notificationData.finished.title, {
-          body: notificationData.finished.body,
-          tag: tag + '-notification'
-        })
-      })
-
-      this.publishResult(taskName, reponseWithoutBr)
-    })
+    this.publishResult(taskName, reponseWithoutBr)
   }
 
   makeFetchConfig (value) {
-    let fetchData = JSON.parse(value)
+    const fetchData = JSON.parse(value)
     if (fetchData) {
-      let url = fetchData.url
-
-      if (!fetchData.mode) {
-        fetchData.mode = 'cors'
-      }
-
-      if (!fetchData.cache) {
-        fetchData.cache = 'default'
-      }
+      const url = fetchData.url
 
       delete (fetchData.url)
 
       return {
-        url: url,
+        url,
         config: fetchData
       }
     }
   }
 
-  publishResult (taskName, result, forceOffline) {
+  async publishResult (taskName, result, forceOffline) {
     this.logDebug('List client [' + this.prefix + taskName + ']')
-    self.clients.matchAll({
+    const clientList = await self.clients.matchAll({
       includeUncontrolled: true
-    }).then((clientList) => {
-      if (clientList.length === 0 || forceOffline === true) {
-        this.updateTaskStatus(taskName, 'cached')
-        this.saveResultWhenOffline(taskName, result)
-      } else {
-        this.updateTaskStatus(taskName, 'completed')
-        for (let client of clientList) {
-          this.postResult(taskName, result, client)
-        }
-      }
     })
+    if (clientList.length === 0 || forceOffline === true) {
+      this.updateTaskStatus(taskName, 'cached')
+      this.saveResultWhenOffline(taskName, result)
+    } else {
+      this.updateTaskStatus(taskName, 'completed')
+      for (const client of clientList) {
+        this.postResult(taskName, result, client)
+      }
+    }
   }
 
-  saveResultWhenOffline (taskName, result) {
-    return new Promise((resolve, reject) => {
-      this.logDebug('client is offline save to LocalForage [' + this.prefix + taskName + ']')
-      localforage.setItem(this.prefix + taskName + '-result', {
-        'result': result,
-        'time': new Date().getTime() / 1000
-      }).then(() => {
-        resolve({
-          status: 'success'
-        })
-      })
+  async saveResultWhenOffline (taskName, result) {
+    this.logDebug('client is offline save to LocalForage [' + this.prefix + taskName + ']')
+    await localforage.setItem(this.prefix + taskName + '-result', {
+      result,
+      time: new Date().getTime() / 1000
     })
+    return {
+      status: 'success'
+    }
   }
 
   postResult (taskName, result, client) {
     this.logDebug('Push to client ' + client.id + ' [' + this.prefix + taskName + ']')
-    let responseMessage = {
-      'result': result,
-      'taskName': taskName
+    const responseMessage = {
+      result,
+      taskName
     }
     client.postMessage(JSON.stringify(responseMessage))
   }
 
-  updateTaskStatus (taskName, status) {
-    return new Promise((resolve, reject) => {
-      if (status !== 'completed') {
-        localforage.setItem(this.prefix + taskName + '-status', status)
-        resolve({
-          status: 'success'
-        })
-      } else {
-        localforage.removeItem(this.prefix + taskName + '-status')
-        resolve({
-          status: 'success'
-        })
+  async updateTaskStatus (taskName, status) {
+    if (status !== 'completed') {
+      localforage.setItem(this.prefix + taskName + '-status', status)
+      return {
+        status: 'success'
       }
-    })
+    } else {
+      localforage.removeItem(this.prefix + taskName + '-status')
+      return {
+        status: 'success'
+      }
+    }
   }
 
   getTaskStatus (taskName) {
-    return new Promise((resolve, reject) => {
-      localforage.getItem(this.prefix + taskName + '-status').then((value) => {
-        resolve(value)
-      })
-    })
+    return localforage.getItem(this.prefix + taskName + '-status')
   }
 
   logDebug (text) {
@@ -221,5 +182,4 @@ class MoleFetch {
       console.log(text)
     }
   }
-
 }
