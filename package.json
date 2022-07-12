@@ -1,7 +1,7 @@
 {
   "name": "mole-fetch",
   "description": "Library for making background HTTP requests by using Service Workers and Fetch API.",
-  "version": "1.6.1",
+  "version": "2.0.0",
   "main": "./dist/mole-fetch.js",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^13.3.0",

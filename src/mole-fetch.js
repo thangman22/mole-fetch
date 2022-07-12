@@ -6,10 +6,6 @@ export class MoleFetch {
     this.debug = false
   }
 
-  regiterNotification () {
-    return Notification.requestPermission()
-  }
-
   // For Client
   onResponse (taskName) {
     return new Promise((resolve, reject) => {
@@ -89,10 +85,8 @@ export class MoleFetch {
   async makeFetch (fetchData, tag, taskName) {
     const value = await localforage.getItem(tag + '-notification')
     const notificationData = JSON.parse(value)
-    self.registration.showNotification(notificationData.start.title, {
-      body: notificationData.start.body,
-      tag: tag + '-notification'
-    })
+    notificationData.start.tag = tag + '-notification'
+    self.registration.showNotification(notificationData.start.title, notificationData.start)
     const request = new Request(fetchData.url, fetchData.config)
     const fetchObject = await fetch(request)
     const response = await fetchObject.text()
@@ -100,11 +94,8 @@ export class MoleFetch {
     localforage.removeItem(tag)
     const reponseWithoutBr = response.replace(/(\r\n|\n|\r)/gm, '')
     this.logDebug('Publish data to client [' + tag + ']')
-
-    self.registration.showNotification(notificationData.finished.title, {
-      body: notificationData.finished.body,
-      tag: tag + '-notification'
-    })
+    notificationData.finished.tag = tag + '-notification'
+    self.registration.showNotification(notificationData.finished.title, notificationData.finished)
 
     this.publishResult(taskName, reponseWithoutBr)
   }

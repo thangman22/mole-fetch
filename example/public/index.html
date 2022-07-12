@@ -18,11 +18,11 @@
         moleFetch.sendRequest('test-fetch', '/online', {}, {
             start: {
                 title: 'Test Fetch',
-                body: 'Test Fetch is processing...',
+                options: { body: 'Test Fetch is processing...' },
             },
             finished: {
                 title: 'Test Fetch',
-                body: 'Test Fetch is finished.',
+                options: { body: 'Test Fetch is finished.' },
             },
         })
     }
