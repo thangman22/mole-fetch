@@ -12,6 +12,7 @@ app.get('/offline', (req, res) => {
 })
 
 app.get('/online', (req, res) => {
+  console.log('Retrive request')
   setTimeout(function () {
     console.log('Status: success')
     res.json({ status: 'success', api: 'online' })

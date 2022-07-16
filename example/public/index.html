@@ -10,12 +10,12 @@
 
 <body>
     <script type="module">
-    import {MoleFetch} from '/mole-fetch.min.js';
-    const moleFetch = new MoleFetch()
-
+    import {MoleFetchClient} from '/mole-fetch.min.js';
+    const moleFetch = new MoleFetchClient()
+    moleFetch.debug = true
     const testFetch = async () => {
         //Call sendRequest for request HTTP
-        moleFetch.sendRequest('test-fetch', '/online', {}, {
+        const response = await moleFetch.sendRequest('test-fetch', '/online', {}, {
             start: {
                 title: 'Test Fetch',
                 options: { body: 'Test Fetch is processing...' },
@@ -25,21 +25,13 @@
                 options: { body: 'Test Fetch is finished.' },
             },
         })
+        document.getElementById("result").innerHTML = JSON.stringify(response);
     }
 
     //Register ServiceWoker
     if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.register("sw.js",{type: 'module'}).then((registration) => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope)
-        }).catch(function(err) {
-            console.error('ServiceWorker registration failed: ', err)
-        })
+        await navigator.serviceWorker.register("sw.js",{type: 'module'})
     }
-
-    //Implement onResponse for recieve response from ServiceWorker when site is online
-    moleFetch.onResponse('test-fetch').then((value) => {
-        document.getElementById("result").innerHTML = JSON.stringify(value);
-    })
 
     //Implement onResponse for recieve response from Cache when site is offline
     moleFetch.getCacheResponse('test-fetch',false).then((value) => {
