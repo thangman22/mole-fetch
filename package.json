@@ -18,7 +18,7 @@
     "mini-mock-api": "^0.3.0",
     "mocha": "^4.0.1",
     "selenium-assistant": "^5.1.1",
-    "selenium-webdriver": "^3.6.0",
+    "selenium-webdriver": "^4.0.0",
     "sw-testing-helpers": "^1.0.2"
   },
   "scripts": {
