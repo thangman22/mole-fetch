@@ -11,7 +11,7 @@
     "babel-preset-es2015": "^6.24.1",
     "chai": "^4.1.2",
     "chai-webdriver": "^1.2.0",
-    "chromedriver": "^2.33.0",
+    "chromedriver": "^113.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
     "gulp-minify": "1.0.0",
