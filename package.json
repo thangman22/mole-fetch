@@ -14,7 +14,7 @@
     "chromedriver": "^2.33.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^7.0.0",
-    "gulp-minify": "1.0.0",
+    "gulp-minify": "3.1.0",
     "mini-mock-api": "^0.3.0",
     "mocha": "^4.0.1",
     "selenium-assistant": "^5.1.1",
